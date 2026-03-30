@@ -68,7 +68,8 @@ class ModelLoader:
 
                 nbits = deployment.get("nbits", None)
                 if type_ == "awq":
-                    model, tokenizer = cls._load_awq_model(model_path, nbits=nbits)
+                    model_path_str = cls.MODEL_PATHS[model_name.lower()][type_]
+                    model, tokenizer = cls._load_awq_model(model_path_str, nbits=nbits)
                 elif type_ == "bitsandbytes":
                     model, tokenizer = cls._load_bitsandbytes_model(
                         model_path, nbits=nbits
