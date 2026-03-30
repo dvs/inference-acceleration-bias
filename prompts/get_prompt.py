@@ -5,6 +5,7 @@ MODEL_PATHS = {
     "llama2chat": "meta-llama/Llama-2-7b-chat-hf",
     "llama3chat": "meta-llama/Meta-Llama-3.1-8B-Instruct",
     "mistralchat": "mistralai/Mistral-7B-Instruct-v0.3",
+    "qwen3": "Qwen/Qwen3-8B",
 }
 
 
