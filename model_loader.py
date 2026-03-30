@@ -35,6 +35,12 @@ class ModelLoader:
             "wanda_struct": "ai-and-society/mistral-7B-Instruct-v0.3-wanda-structured-2-4",
             "wanda_unstruct": "ai-and-society/mistral-7B-Instruct-v0.3-wanda-wanda-unstruct-50",
         },
+        "qwen3": {
+            "base": "Qwen/Qwen3-8B",
+            "awq": "Qwen/Qwen3-8B-AWQ",
+            "bitsandbytes": "Qwen/Qwen3-8B",
+            "gptq": "JunHowie/Qwen3-8B-GPTQ-Int4",
+        },
     }
 
     @classmethod
@@ -60,7 +66,7 @@ class ModelLoader:
             method, type_ = deployment["method"], deployment["type"]
             if method == "quantization":
 
-                nbits = deployment["nbits"]
+                nbits = deployment.get("nbits", None)
                 if type_ == "awq":
                     model, tokenizer = cls._load_awq_model(model_path, nbits=nbits)
                 elif type_ == "bitsandbytes":
@@ -76,6 +82,9 @@ class ModelLoader:
                         "nbits": nbits,  # 4
                         "device": model.device,
                     }
+                elif type_ == "gptq":
+                    # Load GPTQ-quantized repo via transformers (requires gptqmodel package installed)
+                    model, tokenizer = cls._load_gptq_via_transformers(model_path)
 
             elif method == "pruning":
                 if type_ in ["wanda_struct", "wanda_unstruct"]:
@@ -126,6 +135,23 @@ class ModelLoader:
     def _load_base_model(model_path):
         model = AutoModelForCausalLM.from_pretrained(model_path).to("cuda")
         tokenizer = AutoTokenizer.from_pretrained(model_path)
+        return model, tokenizer
+
+    @staticmethod
+    def _load_gptq_via_transformers(model_path):
+        """
+        Load a GPTQ-quantized HF repo (e.g. JunHowie/Qwen3-8B-GPTQ-Int4)
+        via transformers. This relies on the gptqmodel package being installed
+        so that transformers dispatches to the GPTQ-backed model implementation.
+        """
+        # For Qwen-like repos trust_remote_code=True is often required
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            device_map="auto",
+            trust_remote_code=True,
+            low_cpu_mem_usage=True,
+        )
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         return model, tokenizer
 
     @classmethod
