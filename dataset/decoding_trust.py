@@ -26,7 +26,7 @@ class DecodingTrustDataset(Dataset):
         super().__init__(args)
         self.name = "decoding_trust"
         self.source = (
-            "path/to/user_prompts.csv"
+            "user_prompts.csv" # path/to/user_prompts.csv
         )
 
     def load_dataset(self, category="all", mode="full"):
